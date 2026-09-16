@@ -1,0 +1,55 @@
+name: Package ARSnova images
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Pull ARSnova images
+        run: |
+          docker pull particify/couchdb:3.5
+          docker pull postgres:13.23-alpine
+          docker pull particify/rabbitmq-stomp:4.3-alpine
+          docker pull particify/arsnova-server-core:3.13.20260613
+          docker pull particify/arsnova-server-gateway:3.13.20260613
+          docker pull particify/arsnova-server-websocket:3.13.20260613
+          docker pull particify/arsnova-server-authz:3.13.20260613
+          docker pull particify/arsnova-server-comments:3.13.20260613
+          docker pull particify/arsnova-webclient:3.13.20260613
+          docker pull particify/arsnova-server-formatting:3.13.20260613
+          docker pull particify/arsnova-proxy:3
+
+      - name: Export images
+        run: |
+          docker save \
+            particify/couchdb:3.5 \
+            postgres:13.23-alpine \
+            particify/rabbitmq-stomp:4.3-alpine \
+            particify/arsnova-server-core:3.13.20260613 \
+            particify/arsnova-server-gateway:3.13.20260613 \
+            particify/arsnova-server-websocket:3.13.20260613 \
+            particify/arsnova-server-authz:3.13.20260613 \
+            particify/arsnova-server-comments:3.13.20260613 \
+            particify/arsnova-webclient:3.13.20260613 \
+            particify/arsnova-server-formatting:3.13.20260613 \
+            particify/arsnova-proxy:3 \
+            | gzip > arsnova-images-3.13.20260613.tar.gz
+
+          sha256sum arsnova-images-3.13.20260613.tar.gz \
+            > arsnova-images-3.13.20260613.tar.gz.sha256
+
+      - name: Upload image package
+        uses: actions/upload-artifact@v4
+        with:
+          name: arsnova-images-3.13.20260613
+          path: |
+            arsnova-images-3.13.20260613.tar.gz
+            arsnova-images-3.13.20260613.tar.gz.sha256
+          retention-days: 2
+          compression-level: 0
